@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Riaciss Seblak - Cashier System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --primary: #ff4d4d; 
+            --accent: #ffcc00; 
+            --bg-dark: #121212; 
+            --card-bg: #1e1e1e;
+            --input-bg: #2c2c2c;
+            --glass: rgba(255, 255, 255, 0.05); 
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        
+        body { 
+            background: var(--bg-dark); 
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(255, 77, 77, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(255, 204, 0, 0.08) 0%, transparent 40%);
+            min-height: 100vh; 
+            color: #e0e0e0; 
+            overflow-x: hidden;
+        }
+
+        #splash {
+            position: fixed; inset: 0; background: #8b0000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 9999; transition: opacity 0.6s ease;
+        }
+        #splash h1 { font-family: 'Fredoka One', cursive; font-size: 3rem; color: var(--accent); text-shadow: 4px 4px #000; }
+
+        .app-container { max-width: 500px; margin: 0 auto; padding: 20px; display: none; padding-bottom: 140px; }
+        .glass { background: var(--card-bg); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
+        
+        .header-brand { text-align: center; margin-bottom: 25px; padding-top: 20px; }
+        .header-brand h1 { font-family: 'Fredoka One', cursive; font-size: 2.2rem; color: var(--accent); letter-spacing: 1px; }
+
+        .grid-items { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        
+        .card { 
+            background: #252525 !important; 
+            transition: 0.2s; cursor: pointer; text-align: center; padding-bottom: 12px; 
+            border: 3px solid transparent; overflow: hidden; position: relative; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        .card img { width: 100%; height: 120px; object-fit: cover; border-radius: 15px 15px 0 0; background: #333; }
+        .card.selected { border-color: var(--accent); background: rgba(255, 204, 0, 0.15) !important; transform: scale(0.97); }
+        .card.selected::after { content: '✅'; position: absolute; top: 8px; left: 8px; font-size: 1.3rem; z-index: 2; }
+        .card h4 { font-size: 1rem; color: #fff; margin-top: 8px; }
+        .card span { color: var(--accent); font-weight: bold; font-size: 0.9rem; }
+
+        .menu-dots { position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.7); border-radius: 50%; width: 32px; height: 32px; display: flex; justify-content: center; align-items: center; z-index: 10; color: white; font-weight: bold; }
+        .menu-options { position: absolute; top: 40px; right: 5px; background: #333; border-radius: 8px; padding: 5px; z-index: 100; display: none; border: 1px solid #444; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        .menu-options button { display: block; width: 100%; background: none; border: none; color: white; padding: 12px 20px; text-align: left; font-size: 0.9rem; cursor: pointer; border-bottom: 1px solid #444; }
+
+        .card.out-of-stock { opacity: 0.3; filter: grayscale(1); }
+        .card.out-of-stock::before { content: 'HABIS'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-15deg); background: #ff0000; color: white; font-weight: 900; font-size: 0.9rem; padding: 5px; width: 100%; text-align: center; z-index: 5; }
+
+        .btn-add-card { grid-column: span 2; background: rgba(255,255,255,0.05); border: 2px dashed #444; padding: 18px; border-radius: 15px; color: #888; font-weight: bold; cursor: pointer; text-align: center; margin-top: 10px; }
+
+        .input-custom { width: 100%; padding: 15px; background: var(--input-bg); border: 1px solid #444; border-radius: 12px; color: white; font-size: 1rem; margin-bottom: 15px; outline: none; }
+        .input-custom:focus { border-color: var(--primary); }
+        .input-custom option { color: black; background: white; }
+
+        .check-item { display: flex; align-items: center; gap: 15px; background: #252525; padding: 18px; border-radius: 15px; margin-bottom: 12px; cursor: pointer; border: 1px solid #333; }
+        .check-item input { transform: scale(1.5); pointer-events: none; }
+
+        .footer-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #1a1a1a; padding: 20px; display: flex; justify-content: space-between; align-items: center; z-index: 1000; border-top: 3px solid var(--primary); height: 110px; }
+        .btn-next { background: var(--primary); color: white; border: none; padding: 15px 30px; border-radius: 14px; font-weight: 800; cursor: pointer; font-size: 1rem; }
+        .btn-back { background: #444; color: white; border: none; padding: 15px 20px; border-radius: 14px; font-weight: 800; cursor: pointer; }
+
+        #modal-add { position: fixed; inset: 0; background: #121212; z-index: 2000; display: none; flex-direction: column; padding: 30px; overflow-y: auto; }
+        #modal-add h2 { font-family: 'Fredoka One', cursive; color: var(--accent); margin-bottom: 25px; text-align: center; font-size: 2rem; }
+        #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #000; padding: 12px 25px; border-radius: 50px; font-weight: bold; z-index: 3000; display: none; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+
+        .receipt-box { background: white; width: 58mm; padding: 3mm; color: black; font-family: 'Courier New', monospace; font-size: 9pt; margin: 0 auto; line-height: 1.2; }
+        .receipt-header { text-align: center; border-bottom: 2px solid black; padding-bottom: 5px; margin-bottom: 5px; }
+        .receipt-divider { border-top: 1px dashed #000; margin: 5px 0; }
+        .receipt-section-title { font-weight: bold; text-decoration: underline; margin-bottom: 3px; display: block; font-size: 10pt; }
+        .receipt-row { display: flex; justify-content: space-between; }
+        .receipt-note { background: #eee; padding: 4px; margin-top: 5px; font-size: 8pt; border: 1px solid #ccc; font-style: italic; }
+        .hidden { display: none !important; }
+
+        @media print {
+            .app-container, .footer-nav, .header-brand, #splash, .action-buttons, #toast, #modal-add { display: none !important; }
+            #page-struk { display: block !important; position: absolute; top: 0; left: 0; width: 100%; }
+            body { background: white !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="splash"><h1>RIACISS SEBLAK</h1><p id="load-text">Menyiapkan Dapur...</p></div>
+    <div id="toast"></div>
+
+    <div id="modal-add">
+        <h2 id="modal-title">TAMBAH ITEM</h2>
+        <div class="glass" style="padding: 25px;">
+            <label style="font-size: 0.8rem; color: var(--accent); font-weight: bold;">NAMA ITEM</label>
+            <input type="text" id="add-name" class="input-custom" placeholder="Nama Menu">
+            <label style="font-size: 0.8rem; color: var(--accent); font-weight: bold;">HARGA (RP)</label>
+            <input type="number" id="add-price" class="input-custom" placeholder="0">
+            <label style="font-size: 0.8rem; color: var(--accent); font-weight: bold;">LINK GAMBAR (URL)</label>
+            <input type="text" id="add-img" class="input-custom" placeholder="http://...">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px;">
+                <button class="btn-back" onclick="closeModal()">BATAL</button>
+                <button class="btn-next" style="background: #27ae60;" id="btn-save-item">SIMPAN</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="page-topping" class="app-container">
+        <div class="header-brand"><h1>TOPPING</h1></div>
+        <div class="grid-items" id="list-topping"></div>
+        <div class="btn-add-card" id="trigger-add-topping">+ TAMBAH ITEM BARU</div>
+        <div class="footer-nav">
+            <div><small>Estimasi Total</small><h2 id="total-1" style="color:var(--accent)">Rp 0</h2></div>
+            <button class="btn-next" id="btn-to-minuman">MINUMAN ⮕</button>
+        </div>
+    </div>
+
+    <div id="page-minuman" class="app-container">
+        <div class="header-brand"><h1>MINUMAN</h1></div>
+        <div class="grid-items" id="list-minuman"></div>
+        <div class="btn-add-card" id="trigger-add-drink">+ TAMBAH ITEM BARU</div>
+        <div id="box-nutri" class="glass hidden" style="margin-top:20px; padding: 15px; background: #252525;">
+            <label style="font-size: 0.7rem; color: var(--accent); font-weight: bold;">RASA NUTRISARI</label>
+            <select id="nutri-rasa" class="input-custom">
+                <option value="Jeruk Nipis">Jeruk Nipis</option>
+                <option value="Markisa">Markisa</option>
+                <option value="Florida Orange">Florida Orange</option>
+                <option value="Sweet Orange">Sweet Orange</option>
+            </select>
+        </div>
+        <div class="footer-nav">
+            <button class="btn-back" id="btn-back-to-topping">⬅ TOPPING</button>
+            <button class="btn-next" id="btn-to-detail">DETAIL ⮕</button>
+        </div>
+    </div>
+
+    <div id="page-detail" class="app-container">
+        <div class="header-brand"><h1>DETAIL</h1></div>
+        <div class="glass" style="padding: 20px; background: #1e1e1e;">
+            <label style="font-size: 0.8rem; color: var(--accent); font-weight: bold;">NAMA PELANGGAN</label>
+            <input type="text" id="in-nama" class="input-custom" placeholder="Nama Pembeli...">
+            
+            <label style="font-size: 0.8rem; color: var(--accent); font-weight: bold;">METODE PESANAN</label>
+            <select id="in-metode" class="input-custom">
+                <option value="Makan di Sini">Makan di Sini</option>
+                <option value="Dibungkus">Dibungkus / Takeaway</option>
+            </select>
+
+            <label style="font-size: 0.8rem; color: var(--accent); font-weight: bold;">LEVEL PEDAS (0-10)</label>
+            <input type="number" id="in-level" class="input-custom" value="0" min="0">
+            
+            <label style="font-size: 0.8rem; color: var(--accent); font-weight: bold;">VARIAN KUAH</label>
+            <select id="in-kuah" class="input-custom">
+                <option value="Nyemek">Kuah Nyemek</option>
+                <option value="Banyak">Kuah Banyak</option>
+                <option value="Kering">Kering / Tanpa Kuah</option>
+            </select>
+
+            <div class="check-item" id="row-sayur">
+                <input type="checkbox" id="add-sayur"> <span>+ Tambah Sayur (Rp 1k)</span>
+            </div>
+            <div class="check-item" id="row-telur">
+                <input type="checkbox" id="add-telur"> <span>+ Tambah Telur (Rp 3k)</span>
+            </div>
+            <div id="box-telur" class="hidden">
+                <select id="telur-req" class="input-custom">
+                    <option value="Ceplok">Telur Ceplok</option>
+                    <option value="Orak-arik">Telur Orak-arik</option>
+                </select>
+            </div>
+            <label style="font-size: 0.8rem; color: var(--accent); font-weight: bold;">NOTE UNTUK DAPUR</label>
+            <textarea id="in-note" class="input-custom" style="height: 80px; resize: none;" placeholder="Contoh: Gak pake kencur, pisah sambal..."></textarea>
+        </div>
+        <div class="footer-nav">
+            <button class="btn-back" id="btn-back-to-minuman">⬅ BALIK</button>
+            <div style="text-align: right;"><small>Total Bayar</small><h2 id="total-final" style="color:var(--accent)">Rp 0</h2></div>
+            <button class="btn-next" style="background:#27ae60" id="btn-finish">SELESAI ✅</button>
+        </div>
+    </div>
+
+    <div id="page-struk" class="app-container">
+        <div class="receipt-box" id="print-area">
+            <div class="receipt-header">
+                <strong style="font-size: 12pt;">RIACISS SEBLAK</strong><br>
+                <span id="st-date" style="font-size: 8pt;"></span>
+            </div>
+            <div class="receipt-row" style="font-size: 11pt;"><strong>#<span id="st-no"></span></strong> <strong><span id="st-nama"></span></strong></div>
+            <div class="receipt-row" style="margin-top: 3px; font-weight: bold; background: #eee; padding: 2px;">
+                STATUS: <span id="st-metode"></span>
+            </div>
+            <div class="receipt-divider"></div>
+            <span class="receipt-section-title">TOPPING SEBLAK:</span>
+            <div id="st-items-topping"></div>
+            <div class="receipt-divider"></div>
+            <div class="receipt-row"><span><strong>PEDAS:</strong></span> <strong>LVL <span id="st-level"></span></strong></div>
+            <div class="receipt-row"><span><strong>KUAH:</strong></span> <span id="st-kuah"></span></div>
+            <div id="st-extra"></div>
+            <div class="receipt-divider"></div>
+            <span class="receipt-section-title">MINUMAN:</span>
+            <div id="st-items-drink"></div>
+            <div id="st-note-area" class="hidden">
+                <div class="receipt-divider"></div>
+                <strong>NOTE:</strong>
+                <div class="receipt-note" id="st-note"></div>
+            </div>
+            <div class="receipt-divider"></div>
+            <div class="receipt-row" style="font-weight: bold; font-size: 11pt;"><span>TOTAL:</span><span id="st-total"></span></div>
+            <div class="receipt-divider"></div>
+            <center style="font-size: 7pt; margin-top: 5px;">* TERIMA KASIH *</center>
+        </div>
+        <div class="action-buttons" style="margin-top:15px; display:grid; gap:10px">
+            <button class="btn-next" onclick="window.print()">🖨️ CETAK KE DAPUR</button>
+            <button class="btn-next" style="background:#444" id="btn-set-antrian">🔢 ATUR NO. ANTRIAN</button>
+            <button class="btn-next" style="background:#2ecc71" id="btn-new-order">🔄 PESANAN BARU</button>
+            <button class="btn-next" style="background:#000; color:red; border:1px solid red" id="btn-cancel">❌ CANCEL & HAPUS DATA</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBDV3-86eJfRG3aGZU8dvHdD8xZzWNN_gk",
+            authDomain: "database-seblak-riaciss.firebaseapp.com",
+            databaseURL: "https://database-seblak-riaciss-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "database-seblak-riaciss",
+            storageBucket: "database-seblak-riaciss.firebasestorage.app",
+            messagingSenderId: "256981206987",
+            appId: "1:256981206987:web:66ff6c7e011634a60f984e"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const dbRef = ref(db, 'riaciss_pos_system');
+        const SHEETDB_URL = "https://sheetdb.io/api/v1/vlu7rpadcjyhs";
+
+        let toppings = [], drinks = [], selT = [], selM = [], count = 1, currentAddType = '';
+        window.currentOrderId = null; // ID untuk pelacakan hapus data
+
+        onValue(dbRef, (snap) => {
+            const data = snap.val();
+            if(data) {
+                toppings = data.toppings || [];
+                drinks = data.drinks || [];
+                count = data.last_count || 1;
+            } else {
+                toppings = [{name: 'Bakso', price: 2000, img: '', stock: true}];
+                drinks = [{name: 'Es Teh', price: 5000, img: '', stock: true}];
+                sync();
+            }
+            renderMenu('list-topping', toppings, 'T');
+            renderMenu('list-minuman', drinks, 'M');
+            document.getElementById('splash').style.opacity = '0';
+            setTimeout(() => { document.getElementById('splash').style.display = 'none'; nav('page-topping'); }, 600);
+        });
+
+        const sync = () => set(dbRef, { toppings, drinks, last_count: count });
+
+        window.renderMenu = (id, data, p) => {
+            const el = document.getElementById(id); el.innerHTML = '';
+            data.forEach((item, i) => {
+                const isSelected = (p === 'T' ? selT : selM).find(x => x.name === item.name) ? 'selected' : '';
+                el.innerHTML += `
+                    <div class="glass card ${item.stock ? '' : 'out-of-stock'} ${isSelected}" onclick="window.pickItem('${p}', ${i})">
+                        <div class="menu-dots" onclick="window.toggleDots(event, '${p}', ${i})">⋮</div>
+                        <div class="menu-options" id="opt-${p}-${i}">
+                            <button onclick="window.toggleStock(event, '${p}', ${i})">${item.stock ? 'Habis' : 'Ada'}</button>
+                            <button onclick="window.delItem(event, '${p}', ${i})" style="color:red">Hapus</button>
+                        </div>
+                        <img src="${item.img || 'https://via.placeholder.com/200'}" onerror="this.src='https://via.placeholder.com/200'">
+                        <div style="padding:5px;">
+                            <h4>${item.name.toUpperCase()}</h4>
+                            <span>Rp ${item.price.toLocaleString()}</span>
+                        </div>
+                    </div>`;
+            });
+        };
+
+        window.nav = (id) => { document.querySelectorAll('.app-container').forEach(p => p.style.display = 'none'); document.getElementById(id).style.display = 'block'; window.scrollTo(0,0); };
+        window.showToast = (msg) => { const t = document.getElementById('toast'); t.innerText = msg; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 2000); };
+        
+        window.pickItem = (p, i) => {
+            const list = p === 'T' ? toppings : drinks; if(!list[i].stock) return;
+            const basket = p === 'T' ? selT : selM;
+            const idx = basket.findIndex(x => x.name === list[i].name);
+            if(idx > -1) basket.splice(idx, 1); else basket.push(list[i]);
+            if(p === 'M') document.getElementById('box-nutri').classList.toggle('hidden', !selM.some(x=>x.name.includes('Nutri')));
+            renderMenu(p === 'T' ? 'list-topping' : 'list-minuman', list, p);
+            recalc();
+        };
+
+        const recalc = () => {
+            let t = 0; selT.forEach(x => t += x.price); selM.forEach(x => t += x.price);
+            if(parseInt(document.getElementById('in-level').value) > 5) t += 1000;
+            if(document.getElementById('add-sayur').checked) t += 1000;
+            if(document.getElementById('add-telur').checked) t += 3000;
+            document.getElementById('total-1').innerText = "Rp " + t.toLocaleString();
+            document.getElementById('total-final').innerText = "Rp " + t.toLocaleString();
+            return t;
+        };
+
+        document.getElementById('row-sayur').onclick = () => { 
+            const cb = document.getElementById('add-sayur');
+            cb.checked = !cb.checked;
+            recalc(); 
+        };
+        document.getElementById('row-telur').onclick = () => { 
+            const cb = document.getElementById('add-telur');
+            cb.checked = !cb.checked;
+            document.getElementById('box-telur').classList.toggle('hidden', !cb.checked);
+            recalc(); 
+        };
+
+        document.getElementById('btn-to-minuman').onclick = () => { if(selT.length===0) return showToast("Pilih Topping!"); nav('page-minuman'); };
+        document.getElementById('btn-to-detail').onclick = () => { if(selM.length===0) return showToast("Pilih Minuman!"); nav('page-detail'); };
+        document.getElementById('btn-back-to-topping').onclick = () => nav('page-topping');
+        document.getElementById('btn-back-to-minuman').onclick = () => nav('page-minuman');
+        document.getElementById('in-level').oninput = recalc;
+
+        document.getElementById('trigger-add-topping').onclick = () => { currentAddType = 'T'; document.getElementById('modal-title').innerText='TAMBAH TOPPING'; document.getElementById('modal-add').style.display='flex'; };
+        document.getElementById('trigger-add-drink').onclick = () => { currentAddType = 'M'; document.getElementById('modal-title').innerText='TAMBAH MINUMAN'; document.getElementById('modal-add').style.display='flex'; };
+        window.closeModal = () => document.getElementById('modal-add').style.display = 'none';
+        
+        document.getElementById('btn-save-item').onclick = () => {
+            const n = document.getElementById('add-name').value, p = document.getElementById('add-price').value, im = document.getElementById('add-img').value;
+            if(n && p) {
+                (currentAddType === 'T' ? toppings : drinks).push({name:n, price:parseInt(p), img:im, stock:true});
+                sync(); closeModal(); showToast("Berhasil!");
+            }
+        };
+
+        window.toggleDots = (e,p,i) => { e.stopPropagation(); document.querySelectorAll('.menu-options').forEach(o=>o.style.display='none'); document.getElementById(`opt-${p}-${i}`).style.display='block'; };
+        window.toggleStock = (e,p,i) => { e.stopPropagation(); (p==='T'?toppings:drinks)[i].stock = !(p==='T'?toppings:drinks)[i].stock; sync(); };
+        window.delItem = (e,p,i) => { e.stopPropagation(); if(confirm("Hapus?")) { (p==='T'?toppings:drinks).splice(i,1); sync(); } };
+        window.onclick = () => document.querySelectorAll('.menu-options').forEach(o=>o.style.display='none');
+
+        document.getElementById('btn-finish').onclick = async () => {
+            const total = recalc(); 
+            const n = document.getElementById('in-nama').value || 'UMUM';
+            const mtd = document.getElementById('in-metode').value;
+
+            // Generate ID Unik untuk hapus data nanti
+            const idUnik = n.replace(/\s+/g, '') + new Date().getTime();
+            window.currentOrderId = idUnik;
+
+            document.getElementById('st-date').innerText = new Date().toLocaleString();
+            document.getElementById('st-no').innerText = count;
+            document.getElementById('st-nama').innerText = n.toUpperCase();
+            document.getElementById('st-metode').innerText = mtd.toUpperCase();
+            document.getElementById('st-total').innerText = "Rp " + total.toLocaleString();
+            document.getElementById('st-level').innerText = document.getElementById('in-level').value;
+            document.getElementById('st-kuah').innerText = document.getElementById('in-kuah').value.toUpperCase();
+            document.getElementById('st-items-topping').innerHTML = selT.map(x=>'• '+x.name).join('<br>');
+            document.getElementById('st-items-drink').innerHTML = selM.map(x=>'• '+x.name).join('<br>');
+            
+            let ex = '';
+            if(document.getElementById('add-sayur').checked) ex += '• +SAYUR<br>';
+            if(document.getElementById('add-telur').checked) ex += `• +TELUR (${document.getElementById('telur-req').value.toUpperCase()})`;
+            document.getElementById('st-extra').innerHTML = ex;
+            
+            const nt = document.getElementById('in-note').value;
+            if(nt) { document.getElementById('st-note-area').classList.remove('hidden'); document.getElementById('st-note').innerText = nt; }
+            
+            nav('page-struk');
+            
+            // KIRIM KE SHEETDB (tanggal, nama, total, id_unik)
+            try {
+                await fetch(SHEETDB_URL, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ data: [{
+                        tanggal: new Date().toLocaleDateString('id-ID'),
+                        nama: n.toUpperCase(),
+                        total: total,
+                        id_unik: idUnik
+                    }]})
+                });
+            } catch(e) { console.log("SheetDB Error"); }
+        };
+
+        document.getElementById('btn-new-order').onclick = () => { count++; selT=[]; selM=[]; sync(); nav('page-topping'); resetForm(); };
+        
+        // FITUR CANCEL & HAPUS BARIS DI SHEETDB
+        document.getElementById('btn-cancel').onclick = async () => { 
+            if(confirm("Batalkan pesanan ini? Data di Google Sheets akan dihapus.")) { 
+                showToast("Menghapus data pembukuan...");
+                if (window.currentOrderId) {
+                    try {
+                        await fetch(`${SHEETDB_URL}/id_unik/${window.currentOrderId}`, {
+                            method: 'DELETE',
+                            headers: {'Content-Type': 'application/json'}
+                        });
+                        showToast("Data Berhasil Dihapus!");
+                    } catch(e) { console.log("Gagal hapus di SheetDB"); }
+                }
+                
+                selT=[]; selM=[]; 
+                window.currentOrderId = null;
+                nav('page-topping'); 
+                resetForm(); 
+            } 
+        };
+
+        document.getElementById('btn-set-antrian').onclick = () => { const x = prompt("Set Nomor Antrian:", count); if(x) { count=parseInt(x); sync(); document.getElementById('st-no').innerText=count; } };
+
+        function resetForm() {
+            document.getElementById('in-nama').value=''; 
+            document.getElementById('in-level').value='0';
+            document.getElementById('in-metode').value='Makan di Sini';
+            document.getElementById('add-sayur').checked=false; 
+            document.getElementById('add-telur').checked=false;
+            document.getElementById('box-telur').classList.add('hidden'); 
+            document.getElementById('in-note').value='';
+            document.getElementById('st-note-area').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
