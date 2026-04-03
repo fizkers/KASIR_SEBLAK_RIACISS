@@ -84,7 +84,7 @@
 
         .receipt-box { background: white; width: 58mm; padding: 3mm; color: black; font-family: 'Courier New', monospace; font-size: 9pt; margin: 0 auto; line-height: 1.2; }
         .receipt-header { text-align: center; border-bottom: 2px solid black; padding-bottom: 5px; margin-bottom: 5px; }
-        .receipt-header img { width: 15mm; object-fit: contain; margin-bottom: 3px; }
+        .receipt-header img { width: 8mm; height: 8mm; object-fit: contain; vertical-align: middle; margin-bottom: 5px; }
         .receipt-divider { border-top: 1px dashed #000; margin: 5px 0; }
         .receipt-section-title { font-weight: bold; text-decoration: underline; margin-bottom: 3px; display: block; font-size: 10pt; }
         .receipt-row { display: flex; justify-content: space-between; }
@@ -194,11 +194,12 @@
 
     <div id="page-struk" class="app-container">
         <div class="receipt-box" id="print-area">
-            <div class="receipt-header">
-                <img src="logo-riaciss-seblak.jpg" onerror="this.src='https://via.placeholder.com/150'">
-                <br>
-                <span id="st-date" style="font-size: 8pt;"></span>
-            </div>
+          <div class="receipt-header">
+    <img src="logo-riaciss-seblak.jpg" onerror="this.style.display='none'">
+    <strong style="font-size: 11pt; vertical-align: middle;">SEBLAK PEDAS RIACISS</strong>
+    <br>
+    <span id="st-date" style="font-size: 8pt;"></span>
+ </div>
             <div class="receipt-row" style="font-size: 11pt;"><strong>#<span id="st-no"></span></strong> <strong><span id="st-nama"></span></strong></div>
             <div class="receipt-row" style="margin-top: 3px; font-weight: bold; background: #eee; padding: 2px;">
                 STATUS: <span id="st-metode"></span>
