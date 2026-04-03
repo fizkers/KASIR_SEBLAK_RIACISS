@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Riaciss Seblak - Pusat</title>
+    <link rel="apple-touch-icon" href="logo.jpg">
+    <link rel="icon" type="image/jpeg" href="logo.jpg">
+    
     <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root { 
@@ -27,12 +30,14 @@
             overflow-x: hidden;
         }
 
+        /* Splash dengan Logo JPG */
         #splash {
             position: fixed; inset: 0; background: #8b0000;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            z-index: 9999; transition: opacity 0.6s ease;
+            z-index: 9999; transition: opacity 0.6s ease; gap: 10px;
         }
-        #splash h1 { font-family: 'Fredoka One', cursive; font-size: 3rem; color: var(--accent); text-shadow: 4px 4px #000; }
+        #splash img { width: 150px; height: 150px; object-fit: contain; }
+        #splash h1 { font-family: 'Fredoka One', cursive; font-size: 2rem; color: var(--accent); text-shadow: 4px 4px #000; text-align: center; }
 
         .app-container { max-width: 500px; margin: 0 auto; padding: 20px; display: none; padding-bottom: 140px; }
         .glass { background: var(--card-bg); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
@@ -50,7 +55,7 @@
         }
         .card img { width: 100%; height: 120px; object-fit: cover; border-radius: 15px 15px 0 0; background: #333; }
         .card.selected { border-color: var(--accent); background: rgba(255, 204, 0, 0.15) !important; transform: scale(0.97); }
-        .card.selected::after { content: '✅'; position: absolute; top: 8px; left: 8px; font-size: 1.3rem; b-index: 2; }
+        .card.selected::after { content: '✅'; position: absolute; top: 8px; left: 8px; font-size: 1.3rem; z-index: 2; }
         .card h4 { font-size: 1rem; color: #fff; margin-top: 8px; }
         .card span { color: var(--accent); font-weight: bold; font-size: 0.9rem; }
 
@@ -79,7 +84,9 @@
         #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #000; padding: 12px 25px; border-radius: 50px; font-weight: bold; z-index: 3000; display: none; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
 
         .receipt-box { background: white; width: 58mm; padding: 3mm; color: black; font-family: 'Courier New', monospace; font-size: 9pt; margin: 0 auto; line-height: 1.2; }
+        /* Tampilan Logo JPG di Struk */
         .receipt-header { text-align: center; border-bottom: 2px solid black; padding-bottom: 5px; margin-bottom: 5px; }
+        .receipt-header img { width: 45mm; object-fit: contain; margin-bottom: 3px; }
         .receipt-divider { border-top: 1px dashed #000; margin: 5px 0; }
         .receipt-section-title { font-weight: bold; text-decoration: underline; margin-bottom: 3px; display: block; font-size: 10pt; }
         .receipt-row { display: flex; justify-content: space-between; }
@@ -95,7 +102,10 @@
 </head>
 <body>
 
-    <div id="splash"><h1>RIACISS SEBLAK</h1><p id="load-text">Pusat Menyiapkan...</p></div>
+    <div id="splash">
+        <img src="logo.jpg" onerror="this.src='https://via.placeholder.com/150'">
+        <p id="load-text">Pusat Menyiapkan Dapur...</p>
+    </div>
     <div id="toast"></div>
 
     <div id="modal-add">
@@ -190,7 +200,8 @@
     <div id="page-struk" class="app-container">
         <div class="receipt-box" id="print-area">
             <div class="receipt-header">
-                <strong style="font-size: 12pt;">RIACISS SEBLAK (PUSAT)</strong><br>
+                <img src="logo.jpg" onerror="this.src='https://via.placeholder.com/150'">
+                <br>
                 <span id="st-date" style="font-size: 8pt;"></span>
             </div>
             <div class="receipt-row" style="font-size: 11pt;"><strong>#<span id="st-no"></span></strong> <strong><span id="st-nama"></span></strong></div>
@@ -257,6 +268,10 @@
                 toppings = data.toppings || [];
                 drinks = data.drinks || [];
                 count = data.last_count || 1;
+            } else {
+                toppings = [{name: 'Bakso', price: 2000, img: '', stock: true}];
+                drinks = [{name: 'Es Teh', price: 5000, img: '', stock: true}];
+                sync();
             }
             renderMenu('list-topping', toppings, 'T');
             renderMenu('list-minuman', drinks, 'M');
@@ -327,7 +342,7 @@
         };
 
         document.getElementById('row-sayur').onclick = () => { const cb = document.getElementById('add-sayur'); cb.checked = !cb.checked; recalc(); };
-        document.getElementById('row-telur').onclick = () => { const cb = document.getElementById('add-telur'); cb.checked = !cb.checked; document.getElementById('box-telur').classList.toggle('hidden', !cb.checked); recalc(); };
+        document.getElementById('row-telur').onclick = () => { const cb = document.getElementById('add-telur'); cb.checked = !cb.checked; document.getElementById('box-telur').classList.add('hidden'); recalc(); };
 
         document.getElementById('btn-to-minuman').onclick = () => { if(selT.length===0) return showToast("Pilih Topping!"); nav('page-minuman'); };
         document.getElementById('btn-to-detail').onclick = () => { if(selM.length===0) return showToast("Pilih Minuman!"); nav('page-detail'); };
