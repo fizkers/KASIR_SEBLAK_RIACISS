@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Riaciss Seblak - Pusat</title>
-    <link rel="apple-touch-icon" href="logo.jpg">
-    <link rel="icon" type="image/jpeg" href="logo.jpg">
+    <link rel="apple-touch-icon" href="logo-riaciss-seblak.jpg">
+    <link rel="icon" type="image/jpeg" href="logo-riaciss-seblak.jpg">
     
     <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
@@ -30,7 +30,6 @@
             overflow-x: hidden;
         }
 
-        /* Splash dengan Logo JPG */
         #splash {
             position: fixed; inset: 0; background: #8b0000;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
@@ -84,7 +83,6 @@
         #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #000; padding: 12px 25px; border-radius: 50px; font-weight: bold; z-index: 3000; display: none; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
 
         .receipt-box { background: white; width: 58mm; padding: 3mm; color: black; font-family: 'Courier New', monospace; font-size: 9pt; margin: 0 auto; line-height: 1.2; }
-        /* Tampilan Logo JPG di Struk */
         .receipt-header { text-align: center; border-bottom: 2px solid black; padding-bottom: 5px; margin-bottom: 5px; }
         .receipt-header img { width: 45mm; object-fit: contain; margin-bottom: 3px; }
         .receipt-divider { border-top: 1px dashed #000; margin: 5px 0; }
@@ -97,6 +95,7 @@
             .app-container, .footer-nav, .header-brand, #splash, .action-buttons, #toast, #modal-add { display: none !important; }
             #page-struk { display: block !important; position: absolute; top: 0; left: 0; width: 100%; }
             body { background: white !important; }
+            .receipt-box { box-shadow: none; border: none; }
         }
     </style>
 </head>
@@ -158,23 +157,19 @@
         <div class="glass" style="padding: 20px; background: #1e1e1e;">
             <label style="font-size: 0.8rem; color: var(--accent); font-weight: bold;">NAMA PELANGGAN</label>
             <input type="text" id="in-nama" class="input-custom" placeholder="Nama Pembeli...">
-            
             <label style="font-size: 0.8rem; color: var(--accent); font-weight: bold;">METODE PESANAN</label>
             <select id="in-metode" class="input-custom">
                 <option value="Makan di Sini">Makan di Sini</option>
                 <option value="Dibungkus">Dibungkus / Takeaway</option>
             </select>
-
             <label style="font-size: 0.8rem; color: var(--accent); font-weight: bold;">LEVEL PEDAS (0-10)</label>
             <input type="number" id="in-level" class="input-custom" value="0" min="0">
-            
             <label style="font-size: 0.8rem; color: var(--accent); font-weight: bold;">VARIAN KUAH</label>
             <select id="in-kuah" class="input-custom">
                 <option value="Nyemek">Kuah Nyemek</option>
                 <option value="Banyak">Kuah Banyak</option>
                 <option value="Kering">Kering / Tanpa Kuah</option>
             </select>
-
             <div class="check-item" id="row-sayur">
                 <input type="checkbox" id="add-sayur"> <span>+ Tambah Sayur (Rp 1k)</span>
             </div>
@@ -200,7 +195,7 @@
     <div id="page-struk" class="app-container">
         <div class="receipt-box" id="print-area">
             <div class="receipt-header">
-                <img src="logo.jpg" onerror="this.src='https://via.placeholder.com/150'">
+                <img src="logo-riaciss-seblak.jpg" onerror="this.src='https://via.placeholder.com/150'">
                 <br>
                 <span id="st-date" style="font-size: 8pt;"></span>
             </div>
@@ -229,7 +224,7 @@
             <center style="font-size: 7pt; margin-top: 5px;">* TERIMA KASIH PUSAT *</center>
         </div>
         <div class="action-buttons" style="margin-top:15px; display:grid; gap:10px">
-            <button class="btn-next" onclick="window.print()">🖨️ CETAK KE DAPUR</button>
+            <button class="btn-next" id="btn-print-action">🖨️ CETAK KE DAPUR</button>
             <button class="btn-next" style="background:#444" id="btn-set-antrian">🔢 ATUR NO. ANTRIAN</button>
             <button class="btn-next" style="background:#2ecc71" id="btn-new-order">🔄 PESANAN BARU</button>
             <button class="btn-next" style="background:#000; color:red; border:1px solid red" id="btn-cancel">❌ CANCEL & HAPUS DATA</button>
@@ -240,10 +235,8 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
         import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
 
-        // ================= CONFIG CABANG PUSAT =================
         const NAMA_CABANG = "PUSAT"; 
         const SHEETDB_URL_CABANG = "https://sheetdb.io/api/v1/vlu7rpadcjyhs?sheet=Laporan_Pusat"; 
-        // =======================================================
 
         const firebaseConfig = {
             apiKey: "AIzaSyBDV3-86eJfRG3aGZU8dvHdD8xZzWNN_gk",
@@ -342,7 +335,7 @@
         };
 
         document.getElementById('row-sayur').onclick = () => { const cb = document.getElementById('add-sayur'); cb.checked = !cb.checked; recalc(); };
-        document.getElementById('row-telur').onclick = () => { const cb = document.getElementById('add-telur'); cb.checked = !cb.checked; document.getElementById('box-telur').classList.add('hidden'); recalc(); };
+        document.getElementById('row-telur').onclick = () => { const cb = document.getElementById('add-telur'); cb.checked = !cb.checked; document.getElementById('box-telur').classList.toggle('hidden', !cb.checked); recalc(); };
 
         document.getElementById('btn-to-minuman').onclick = () => { if(selT.length===0) return showToast("Pilih Topping!"); nav('page-minuman'); };
         document.getElementById('btn-to-detail').onclick = () => { if(selM.length===0) return showToast("Pilih Minuman!"); nav('page-detail'); };
@@ -366,6 +359,14 @@
         window.toggleStock = (e,p,i) => { e.stopPropagation(); (p==='T'?toppings:drinks)[i].stock = !(p==='T'?toppings:drinks)[i].stock; sync(); };
         window.delItem = (e,p,i) => { e.stopPropagation(); if(confirm("Hapus dari menu?")) { (p==='T'?toppings:drinks).splice(i,1); sync(); } };
         window.onclick = () => document.querySelectorAll('.menu-options').forEach(o=>o.style.display='none');
+
+        // PERBAIKAN TOMBOL CETAK
+        document.getElementById('btn-print-action').onclick = () => {
+            window.focus();
+            setTimeout(() => {
+                window.print();
+            }, 300);
+        };
 
         document.getElementById('btn-finish').onclick = async () => {
             const total = recalc(); 
